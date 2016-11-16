@@ -4,11 +4,19 @@ using BlackBarLabs.Collections.Async;
 
 namespace BlackBarLabs.Security.SessionServer.Persistence
 {
-    public delegate Task<bool> CredentialProviderDelegate(Uri providerId, string username, Uri [] externalClaimsLocations);
+    public delegate Task<bool> CredentialProviderDelegate(Uri providerId, string username, Uri[] externalClaimsLocations);
     public delegate Task<bool> ShouldCreateCallback();
-    public delegate Task ClaimDelegate(Guid claimId, Uri issuer, Uri type, string value);
+
+    public struct Claim
+    {
+        public Guid claimId;
+        public Uri issuer;
+        public Uri type;
+        public string value;
+    }
+
     public delegate Task<TResult> SaveClaimDelegate<TResult>(Guid claimId, Uri issuer, Uri type, string value);
-    public delegate Task<TResult> UpdateClaimsSuccessDelegateAsync<TResult, TResultAdded>(IEnumerableAsync<ClaimDelegate> claims,
+    public delegate Task<TResult> UpdateClaimsSuccessDelegateAsync<TResult, TResultAdded>(Claim[] claims,
         SaveClaimDelegate<TResultAdded> addClaim);
 
     public interface IAuthorizations
@@ -28,7 +36,7 @@ namespace BlackBarLabs.Security.SessionServer.Persistence
         /// <param name="providerId"></param>
         /// <param name="userId"></param>
         Task<T> FindAuthId<T>(Uri providerId, string username,
-            Func<Guid, IEnumerableAsync<ClaimDelegate>, T> onSuccess, Func<T> onFailure);
+            Func<Guid, Claim[], T> onSuccess, Func<T> onFailure);
 
         Task<TResult> UpdateClaims<TResult, TResultAdded>(Guid authorizationId,
             UpdateClaimsSuccessDelegateAsync<TResult, TResultAdded> onSuccess,
